@@ -2,6 +2,7 @@
 var currentUser = null;
 $(document).ready(()=>{
   const socket = io.connect();
+  socket.emit('getOnlineUsers');
 
   $('#create-user-btn').click((e)=>{
     e.preventDefault();
@@ -40,6 +41,19 @@ $(document).ready(()=>{
     </div>
   `);
   })
+  socket.on('getOnlineUsers', (onlineUsers) => {
+    //You may have not have seen this for loop before. It's syntax is for(key in obj)
+    //Our usernames are keys in the object of onlineUsers.
+    for(username in onlineUsers){
+      $('.users-online').append(`<div class="user-online">${username}</div>`);
+    }
+  })
+  socket.on('userHasLeft', (onlineUsers) => {
+    $('.users-online').empty();
+    for(username in onlineUsers){
+      $('.users-online').append(`<p>${username}</p>`);
+    }
+  });
   
 
 })
