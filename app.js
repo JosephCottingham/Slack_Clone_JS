@@ -7,9 +7,13 @@ const server = require('http').Server(app);
 //Socket.io
 const io = require('socket.io')(server);
 
+//Save the users in this object
 let onlineUsers = {};
+//Save the channels in this object.
+let channels = {"General" : []}
+
 io.on("connection", (socket) => {
-    require('./sockets/chat.js')(io, socket, onlineUsers);
+    require('./sockets/chat.js')(io, socket, onlineUsers, channels);
     console.log("New user connected!");
 })
 

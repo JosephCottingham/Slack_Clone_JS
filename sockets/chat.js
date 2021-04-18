@@ -27,4 +27,18 @@ module.exports = (io, socket, onlineUsers) => {
     delete onlineUsers[socket.username];
     io.emit('userHasLeft', onlineUsers);
   });
+
+  socket.on('newChannel', (newChannel) => {
+    //Save the new channel to our channels object. The array will hold the messages.
+    channels[newChannel] = [];
+    //Have the socket join the new channel room.
+    socket.join(newChannel);
+    //Inform all clients of the new channel.
+    io.emit('new channel', newChannel);
+    //Emit to the client that made the new channel, to change their channel to the one they made.
+    socket.emit('user changed channel', {
+      channel : newChannel,
+      messages : channels[newChannel]
+    });
+  })
 }
