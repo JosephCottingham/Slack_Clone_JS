@@ -15,12 +15,18 @@ $(document).ready(()=>{
     }
   });
 
-  $('#send-chat-btn').click((e)=>{
+  $('#send-chat-btn').click((e) => {
     e.preventDefault();
-    msg = $('#chat-input').val();
-    if(msg.length > 0){
-      console.log('msg sent');
-      socket.emit('newMsg', {user:currentUser,msg:msg});
+    // Get the client's channel
+    let channel = $('.channel-current').text();
+    let message = $('#chat-input').val();
+    if(message.length > 0){
+      socket.emit('newMsg', {
+        sender : currentUser,
+        message : message,
+        //Send the channel over to the server
+        channel : channel
+      });
       $('#chat-input').val("");
     }
   });
@@ -42,15 +48,17 @@ $(document).ready(()=>{
     // Add the new user to the online users div
     $('.users-online').append(`<div class="user-online">${username}</div>`);
   })
-  socket.on('newMsg', (newMsg) => {
-    console.log(newMsg);
-    // Add the new user to the online users div
-    $('.message-container').append(`
-    <div class="message">
-      <p class="message-user">${newMsg.user}: </p>
-      <p class="message-text">${newMsg.msg}</p>
-    </div>
-  `);
+  socket.on('newMsg', (data) => {
+    //Only append the message if the user is currently in that channel
+    let currentChannel = $('.channel-current').text();
+    if(currentChannel == data.channel){
+      $('.message-container').append(`
+        <div class="message">
+          <p class="message-user">${data.sender}: </p>
+          <p class="message-text">${data.message}</p>
+        </div>
+      `);
+    }
   })
   socket.on('getOnlineUsers', (onlineUsers) => {
     //You may have not have seen this for loop before. It's syntax is for(key in obj)

@@ -15,7 +15,8 @@ module.exports = (io, socket, onlineUsers) => {
   socket.on('newMsg', (data) => {
     // Send that data back to ALL clients
     console.log(`${data.user}: ${data.msg}`)
-    io.emit('newMsg', data);
+    channels[data.channel].push({sender : data.sender, message : data.message});
+    io.to(data.channel).emit('newMsg', data);
   })
 
   socket.on('getOnlineUsers', () => {
