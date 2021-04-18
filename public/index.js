@@ -3,9 +3,11 @@ var currentUser = null;
 $(document).ready(()=>{
   const socket = io.connect();
   socket.emit('getOnlineUsers');
+  socket.emit('getChannels');
+  socket.emit('userChangedChannel', "General");
 
   $('#create-user-btn').click((e)=>{
-    e.preventDefault();
+  e.preventDefault();
     if($('#username-input').val().length > 0){
       currentUser = $('#username-input').val();
       socket.emit('newUser', currentUser);
@@ -13,6 +15,13 @@ $(document).ready(()=>{
       // Have the main page visible
       $('.main-container').css('display', 'flex');
     }
+  });
+
+  //Users can change the channel by clicking on its name.
+  $(document).on('click', '.channel', (e)=>{
+    console.log('userChangedChannel');
+    let newChannel = e.target.textContent;
+    socket.emit('userChangedChannel', newChannel);
   });
 
   $('#send-chat-btn').click((e) => {
@@ -67,6 +76,14 @@ $(document).ready(()=>{
       $('.users-online').append(`<div class="user-online">${username}</div>`);
     }
   })
+  socket.on('getChannels', (channels) => {
+    //You may have not have seen this for loop before. It's syntax is for(key in obj)
+    //Our usernames are keys in the object of onlineUsers.
+    console.log(channels);
+    for(channel in channels){
+      $('.channels').append(`<div class="channel">${channel}</div>`);
+    }
+  })
   socket.on('userHasLeft', (onlineUsers) => {
     $('.users-online').empty();
     for(username in onlineUsers){
@@ -75,13 +92,13 @@ $(document).ready(()=>{
   });
   
   // Add the new channel to the channels list (Fires for all clients)
-  socket.on('new channel', (newChannel) => {
+  socket.on('newChannel', (newChannel) => {
     $('.channels').append(`<div class="channel">${newChannel}</div>`);
   });
 
   // Make the channel joined the current channel. Then load the messages.
   // This only fires for the client who made the channel.
-  socket.on('user changed channel', (data) => {
+  socket.on('userChangedChannel', (data) => {
     $('.channel-current').addClass('channel');
     $('.channel-current').removeClass('channel-current');
     $(`.channel:contains('${data.channel}')`).addClass('channel-current');
